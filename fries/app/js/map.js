@@ -4,8 +4,8 @@
  */
 
 var Findr = {
-    Setup : {},
-    RestClient : {}
+    Setup : {}, //load maps related info
+    RestClient : {} //rest client to get data
 };
 
 Findr.Setup = function () {
@@ -15,10 +15,6 @@ Findr.Setup = function () {
         lng: 122.4183
     },
     gmapsUrl = 'http://maps.googleapis.com/maps/api/js?key=AIzaSyCBUF1Kv8dJR0xd2w2BMtxNsAMSsqU7tI0&sensor=true&callback=Findr.Setup.mapInit';
-
-    function init () {
-        loadMapsScript();
-    }
 
     function loadMapsScript() {
         var script = document.createElement('script');
@@ -39,7 +35,7 @@ Findr.Setup = function () {
     }
 
     return {
-        init: init,
+        loadMapsScript: loadMapsScript,
         mapInit : mapInit //make public because google maps needs global function for onload callback
     };
 
@@ -50,6 +46,10 @@ Findr.RestClient = function() {
     var endpoint = 'http://innoutapi.hp.af.cm',
         routes = {
             merchants : '/merchants'
+        },
+        basicAuth = {
+            username : 'findr',
+            password : '$showmethelocation$'
         };
 
     /**
@@ -60,8 +60,22 @@ Findr.RestClient = function() {
 
         }
         else {
+            var url = buildUrl('merchants');
             jQuery.ajax({
-
+                type: 'GET',
+                url: url,
+                cache: true,
+                dataType: 'json',
+                crossDomain: true,
+                username: basicAuth.username,
+                password: basicAuth.password,
+                success: function (data) {
+                    console.log(data);
+                    return data;
+                },
+                error: function (error) {
+                    console.log(error);
+                }
             });
         }
     }
@@ -83,8 +97,8 @@ Findr.RestClient = function() {
      * @param route
      */
     function buildUrl(route) {
-        var url = '';
-
+        var url = endpoint + routes[route];
+        console.log(url);
         return url;
     }
 
@@ -96,5 +110,6 @@ Findr.RestClient = function() {
 }();
 
 window.onload = function() {
-    Findr.Setup.init();
+    Findr.Setup.loadMapsScript();
+    var merchantLocations = Findr.RestClient.getLocations();
 };
