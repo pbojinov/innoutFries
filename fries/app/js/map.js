@@ -59,11 +59,13 @@ Findr.RestClient = function () {
      * Return all IN-N-OUT locations
      */
     function getLocations (limit, maxDistance) {
+        var dfd = jQuery.Deferred();
         if ((limit !== undefined) && (maxDistance !== undefined)) {
-
+            return dfd.promise();
         }
         else {
             var url = buildUrl('merchants');
+
             jQuery.ajax({
                 type: 'GET',
                 url: url,
@@ -75,12 +77,13 @@ Findr.RestClient = function () {
                 },
                 success: function (data) {
                     console.log(data);
-                    return data;
+                    dfd.resolve(data);
                 },
                 error: function (error) {
                     console.log(error);
                 }
             });
+            return dfd.promise();
         }
     }
 
@@ -140,18 +143,39 @@ Findr.Factory = function () {
             map: Findr.Setup.map,
             icon: markerIcon
         });
+        markers.push(marker);
     }
 
+    //Remove the overlays from the map, but not from array
     function clearOverlays () {
-
+        if (markers) {
+            var item;
+            for (item in markers) {
+                markers[item].setMapp(null);
+            }
+        }
     }
 
+    //Show overlay items in the array
     function showOverlays () {
-
+        if (markers) {
+            var item;
+            for (item in markers) {
+                markers[item].setMap(map);
+            }
+        }
     }
 
+    //Delete all markers in the array by removing references to them
+    //TODO make sure this doesn't memory leak
     function deleteOverlays () {
-
+        if (markers) {
+            var item;
+            for (item in markers) {
+                markers[item].setMap(null);
+            }
+            markers.length = 0;
+        }
     }
 
     return {
@@ -162,9 +186,19 @@ Findr.Factory = function () {
 
 window.onload = function () {
     Findr.Setup.loadMapsScript();
-    jQuery.when(Findr.RestClient.getLocations()).then(function(data) {
-        console.log(data);
-    });
+    jQuery.when(Findr.RestClient.getLocations()).then(
+
+        //success
+        function(data) {
+            console.log(data);
+            //Findr.Factory.processMarkers(data);
+        },
+
+        //fail
+        function(error) {
+            console.log(error);
+        }
+    );
     //var merchantLocations = ''; //get back JSON
     //Findr.Factory.processMarkers(merchantLocations);
 };
