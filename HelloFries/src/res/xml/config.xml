@@ -30,7 +30,7 @@
     <access origin=".*"/>
 
     <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
-    <content src="app/maps.html" />
+    <content src="app/map.html" />
 
     <log level="DEBUG"/>
     <preference name="useBrowserHistory" value="true" />
