@@ -278,8 +278,8 @@ Findr.Markers = function () {
                 _id = merchant._id,
                 location;
 
-            location = new google.maps.LatLng(lat, lng);
-            console.log(location);
+            var location = new google.maps.LatLng(lat, lng);
+            //console.log(location);
         }
     }
 
