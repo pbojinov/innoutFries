@@ -1,7 +1,14 @@
 CACHE MANIFEST
-css/base.css
-map.html
 
+# v0.0.1 2013-08-06
+
+# our code
+map.html
+js/map.js
+css/base.css
+img/sign-plain.png
+
+# fries lib
 ../lib/css/base.css"
 ../lib/css/action-bars.css"
 ../lib/css/chevrons.css"
@@ -15,7 +22,10 @@ map.html
 ../lib/css/stack.css"
 ../lib/css/sliders.css"
 
-NETWORK:
+# google js
+https://www.google.com/jsapi
+
+# lets try this
 http://maps.gstatic.com/
 http://maps.google.com/
 http://maps.googleapis.com/
@@ -30,3 +40,12 @@ http://cbk1.googleapis.com/
 http://www.google-analytics.com/
 http://gg.google.com/
 http://csi.gstatic.com/
+
+# Use from network if available
+NETWORK:
+http://innoutapi.hp.af.cm
+http://innoutapi.hp.af.cm/merchants
+
+# Fallback content when we offline
+FALLBACK:
+map-offline.html

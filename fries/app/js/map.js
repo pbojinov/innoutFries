@@ -265,7 +265,7 @@ Findr.RestClient = function () {
 Findr.Markers = function () {
 
     var markers = [],
-        markerIcon = '../img/sign-plain.png';
+        markerIcon = 'img/sign-plain.png';
 
     function processMarkers (merchantLocations) {
         var m = merchantLocations.merchants;
@@ -275,21 +275,29 @@ Findr.Markers = function () {
                 lng = merchant.pos.lat,
                 address = merchant.address,
                 city = merchant.city,
-                _id = merchant._id,
-                location;
+                _id = merchant._id;
 
             var location = new google.maps.LatLng(lat, lng);
-            //console.log(location);
+            addMarker(location, address);
         }
+
+        //after all markers are placed on map, show them
+        showOverlays();
     }
 
-    function addMarker (location) {
-        var marker = new google.maps.Marker({
-            position: location,
-            map: Findr.Map.map,
-            icon: markerIcon
-        });
-        markers.push(marker);
+    function addMarker (location, title) {
+        if ((location !== 'undefined') && (title !== 'undefined')) {
+            var marker = new google.maps.Marker({
+                position: location,
+                map: Findr.Map.map,
+                icon: markerIcon,
+                title: title
+            });
+            markers.push(marker);
+        }
+        else {
+            throw 'Cannot set markers. Reason: Undefined parameters'
+        }
     }
 
     //Remove the overlays from the map, but not from array
@@ -307,7 +315,7 @@ Findr.Markers = function () {
         if (markers) {
             var item;
             for (item in markers) {
-                markers[item].setMap(map);
+                markers[item].setMap(Findr.Map.map);
             }
         }
     }
@@ -325,7 +333,9 @@ Findr.Markers = function () {
     }
 
     return {
-        processMarkers: processMarkers
+        processMarkers: processMarkers,
+        markers: markers,
+        showOverlays: showOverlays
     }
 
 }();
