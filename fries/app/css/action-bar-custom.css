@@ -1,0 +1,17 @@
+/**
+ * Author: Petar
+ * Date: 8/5/13
+ */
+.action-bar {
+    border-bottom: 2px solid #BF3030;
+    background-color: #FF4040;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.action-bar .title {
+    color: #fff;
+    font-weight: bold;
+    margin-left: 5px;
+}
+.action-bar h1.title {
+    font-size: 18px;
+}
