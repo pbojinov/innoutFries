@@ -272,12 +272,15 @@ Findr.Markers = function () {
         for (var i = 0, length = m.length; i < length; i++) {
             var merchant = m[i],
                 lat = merchant.pos.lat,
-                lng = merchant.pos.lat,
+                lng = merchant.pos.lng,
                 address = merchant.address,
                 city = merchant.city,
                 _id = merchant._id;
 
+            console.log(city, address, _id, lat, lng);
+
             var location = new google.maps.LatLng(lat, lng);
+            //console.log(location);
             addMarker(location, address);
         }
 
