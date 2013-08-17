@@ -241,6 +241,7 @@ Findr.RestClient = function () {
                 crossDomain: true,
                 username: basicAuth.username,
                 password: basicAuth.password,
+                
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(basicAuth.username + basicAuth.password));
                 },
