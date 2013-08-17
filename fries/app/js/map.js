@@ -242,7 +242,7 @@ Findr.RestClient = function () {
                 username: basicAuth.username,
                 password: basicAuth.password,
                 beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'Basic ' + Base64.encode(basicAuth.username + basicAuth.password));
+                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(basicAuth.username + basicAuth.password));
                 },
                 success: function (data) {
                     dfd.resolve(data);
