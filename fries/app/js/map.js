@@ -4,15 +4,17 @@
  */
 
 var Findr = {
-    Setup : {}, //load maps related info
-    RestClient : {} //rest client to get data
+    Cache: {}, //app cache
+    Map: {}, //load maps content
+    RestClient: {}, //gets our data from the API,
+    Markers: {} //map marker manager
 };
 
-Findr.Cache = function() {
+Findr.Cache = function () {
 
     var merchants;
 
-    function getItem (key) {
+    function getItem(key) {
         if (window.localStorage) {
             return window.localStorage.getItem(key);
         }
@@ -21,7 +23,7 @@ Findr.Cache = function() {
         }
     }
 
-    function setItem (key, value) {
+    function setItem(key, value) {
         if (window.localStorage) {
             window.localStorage.setItem(key, value);
         }
@@ -30,7 +32,7 @@ Findr.Cache = function() {
         }
     }
 
-    function removeItem (key) {
+    function removeItem(key) {
         if (window.localStorage) {
             window.localStorage.removeItem(key);
         }
@@ -39,7 +41,7 @@ Findr.Cache = function() {
         }
     }
 
-    function clearCache () {
+    function clearCache() {
         if (window.localStorage) {
             window.localStorage.clear();
         }
@@ -68,14 +70,17 @@ Findr.Map = function () {
         },
         gmapsUrl = 'http://maps.googleapis.com/maps/api/js?key=AIzaSyCBUF1Kv8dJR0xd2w2BMtxNsAMSsqU7tI0&sensor=true&callback=Findr.Map.mapInit';
 
-    function loadMapsScript () {
+    function loadMapsScript() {
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = gmapsUrl;
         document.body.appendChild(script);
     }
 
-    function mapInit () {
+    /**
+     * The meat of the app initialization happens here
+     */
+    function mapInit() {
         var center = new google.maps.LatLng(mapCenter.lat, mapCenter.lng);
         google.maps.visualRefresh = true; // Enable the visual refresh before the map is rendered
         mapOptions = {
@@ -85,6 +90,21 @@ Findr.Map = function () {
             disableDefaultUI: true
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+        //refactor to load after maps has loaded, otherwise we get google is undefined
+        jQuery.when(Findr.RestClient.getLocations()).then(
+
+            //success
+            function (data) {
+                console.log(data);
+                Findr.Markers.processMarkers(data);
+            },
+
+            //fail
+            function (error) {
+                console.log(error);
+            }
+        );
     }
 
     /**
@@ -100,7 +120,7 @@ Findr.Map = function () {
      * Example usage:
      *      Findr.Map.setMapCenter.(37.4419, -122.1419)
      */
-    function setMapCenter (lat, lng) {
+    function setMapCenter(lat, lng) {
         if (typeof lat === 'number' && typeof lng === 'number') {
             if (Findr.Map.map) {
                 var center = new google.maps.LatLng(lat, lng);
@@ -119,7 +139,7 @@ Findr.Map = function () {
      * Set Map Zoom Level
      * @param amount {int}
      */
-    function setMapZoom (amount) {
+    function setMapZoom(amount) {
         if (typeof amount === 'number') {
             if (Findr.Map.map) {
                 Findr.Map.map.setZoom(amount);
@@ -138,7 +158,7 @@ Findr.Map = function () {
      * Set Map Type
      * @param type {google.maps.MapTypeId}
      */
-    function setMapTypeId (type) {
+    function setMapTypeId(type) {
         if (Findr.Map.map) {
             Findr.Map.map.setMapTypeId(type);
         }
@@ -152,7 +172,7 @@ Findr.Map = function () {
      * @returns center {Object} center.lat, center.lng
      */
 
-    function getMapCenter () {
+    function getMapCenter() {
         if (Findr.Map.map) {
             var center = {},
                 mapCenter = Findr.Map.map.getCenter();
@@ -171,7 +191,7 @@ Findr.Map = function () {
         loadMapsScript: loadMapsScript,
 
         //public google maps needs global function for onload callback
-        mapInit : mapInit,
+        mapInit: mapInit,
 
         //our main map object, expose so MarkerFactory can use
         map: map,
@@ -192,17 +212,17 @@ Findr.RestClient = function () {
 
     var endpoint = 'http://innoutapi.hp.af.cm',
         routes = {
-            merchants : '/merchants'
+            merchants: '/merchants'
         },
         basicAuth = {
-            username : 'findr',
-            password : '$showmethelocation$'
+            username: 'findr',
+            password: '$showmethelocation$'
         };
 
     /**
      * Return all IN-N-OUT locations
      */
-    function getLocations (limit, maxDistance) {
+    function getLocations(limit, maxDistance) {
         var dfd = jQuery.Deferred();
         if ((limit !== undefined) && (maxDistance !== undefined)) {
             return dfd.promise();
@@ -219,14 +239,17 @@ Findr.RestClient = function () {
                 cache: true,
                 dataType: 'json',
                 crossDomain: true,
-                beforeSend: function(xhr){
-                    xhr.setRequestHeader('Authorization', 'Basic ' + Base64.encode(basicAuth.username + ":" + basicAuth.password));
+                username: basicAuth.username,
+                password: basicAuth.password,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Basic ' + Base64.encode(basicAuth.username + basicAuth.password));
                 },
                 success: function (data) {
                     dfd.resolve(data);
                 },
                 error: function (error) {
-                    dfd.reject();
+                    dfd.reject(error);
+                    //TODO display some error
                 }
             });
             return dfd.promise();
@@ -239,7 +262,7 @@ Findr.RestClient = function () {
      *
      * @param currentLocation {Object} currentLocation.lat, currnetLocation.lng
      */
-    function getNearestFiveLocations (currentLocation) {
+    function getNearestFiveLocations(currentLocation) {
         jQuery.ajax({
             //TODO call nearest five endpoint
         });
@@ -256,18 +279,30 @@ Findr.RestClient = function () {
     }
 
     return {
-        getLocations : getLocations,
-        getNearestFiveLocations : getNearestFiveLocations
+        getLocations: getLocations,
+        getNearestFiveLocations: getNearestFiveLocations
     }
 
 }();
 
+/**
+ * Using GMaps v3 cluster manager
+ * http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/docs/reference.html
+ *
+ * @type {Findr.Markers}
+ */
 Findr.Markers = function () {
 
     var markers = [],
-        markerIcon = 'img/sign-plain.png';
+        markerIcon = 'img/sign.png',
+        markerClusterer,
+        markerClustererOptions = {
+            maxZoom: '',
+            gridSize: ''
+        },
+        currentMarker = null;
 
-    function processMarkers (merchantLocations) {
+    function processMarkers(merchantLocations) {
         var m = merchantLocations.merchants;
         for (var i = 0, length = m.length; i < length; i++) {
             var merchant = m[i],
@@ -277,30 +312,71 @@ Findr.Markers = function () {
                 city = merchant.city,
                 _id = merchant._id;
 
-            console.log(city, address, _id, lat, lng);
-
+            //console.log(city, address, _id, lat, lng);
             var location = new google.maps.LatLng(lat, lng);
-            //console.log(location);
-            addMarker(location, address);
+            addMarker(location, address, 'location');
         }
 
-        //after all markers are placed on map, show them
-        showOverlays();
+        //after all markers are placed on map, add them to Cluster Manager which will display them
+        setOverlaysCluster();
     }
 
-    function addMarker (location, title) {
-        if ((location !== 'undefined') && (title !== 'undefined')) {
+    function setOverlaysCluster() {
+        if (markers) {
+            markerClusterer = new MarkerClusterer(Findr.Map.map, markers);
+        }
+    }
+
+    function clearOverlaysCluster() {
+        if (markerClusterer) {
+            markerClusterer.clearMarkers();
+        }
+    }
+
+    function addMarker(location, title, type) {
+        if (type === 'user') {
             var marker = new google.maps.Marker({
                 position: location,
                 map: Findr.Map.map,
-                icon: markerIcon,
-                title: title
+                animation: google.maps.Animation.DROP,
+                icon: 'img/pulse.gif',
+                title: title,
+                optimized: false
             });
-            markers.push(marker);
+            marker.setMap(Findr.Map.map);
         }
-        else {
-            throw 'Cannot set markers. Reason: Undefined parameters'
+        else if (type === 'location') {
+            if ((location !== 'undefined') && (title !== 'undefined')) {
+                var marker = new google.maps.Marker({
+                    position: location,
+                    map: Findr.Map.map,
+                    icon: markerIcon,
+                    title: title
+                });
+                google.maps.event.addListener(marker, 'click', (function (marker) {
+                    return function () {
+                        if (currentMarker) {
+                            currentMarker.setAnimation(null);
+                        }
+                        currentMarker = marker;
+                        if (marker.getAnimation() != null) {
+                            marker.setAnimation(null);
+                        }
+                        else {
+                            marker.setAnimation(google.maps.Animation.BOUNCE);
+                        }
+                    }
+                })(marker));
+                markers.push(marker);
+            }
+            else {
+                throw 'Cannot set markers. Reason: Undefined parameters'
+            }
         }
+    }
+
+    function toggleBounce() {
+
     }
 
     //Remove the overlays from the map, but not from array
@@ -314,7 +390,7 @@ Findr.Markers = function () {
     }
 
     //Show overlay items in the array
-    function showOverlays () {
+    function showOverlayIcons () {
         if (markers) {
             var item;
             for (item in markers) {
@@ -323,9 +399,14 @@ Findr.Markers = function () {
         }
     }
 
-    //Delete all markers in the array by removing references to them
-    //TODO make sure this doesn't memory leak
-    function deleteOverlays () {
+    /**
+     * Delete all markers in the array by removing references to them
+     *
+     * Emptying Arrays:
+     *      Good: markers.length = 0
+     *      Bad: markers = [];
+     */
+    function deleteOverlays() {
         if (markers) {
             var item;
             for (item in markers) {
@@ -337,27 +418,51 @@ Findr.Markers = function () {
 
     return {
         processMarkers: processMarkers,
+        addMarker: addMarker,
         markers: markers,
-        showOverlays: showOverlays
+        showOverlayIcons: showOverlayIcons
     }
 
 }();
 
+Findr.Geo = function () {
+
+
+    function onGeolocationSuccess (position) {
+//        alert('Latitude: '          + position.coords.latitude          + '\n' +
+//            'Longitude: '         + position.coords.longitude         + '\n' +
+//            'Altitude: '          + position.coords.altitude          + '\n' +
+//            'Accuracy: '          + position.coords.accuracy          + '\n' +
+//            'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+//            'Heading: '           + position.coords.heading           + '\n' +
+//            'Speed: '             + position.coords.speed             + '\n' +
+//            'Timestamp: '         + position.timestamp                + '\n');
+
+        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        Findr.Markers.addMarker(location, '', 'user');
+    }
+
+    function onGeolocationError (error) {
+        alert('code: '    + error.code    + '\n' +
+            'message: ' + error.message + '\n');
+    }
+
+    return {
+        onGeolocationSuccess: onGeolocationSuccess,
+        onGeolocationError: onGeolocationError
+    }
+}();
+
 window.onload = function () {
     Findr.Map.loadMapsScript();
-    jQuery.when(Findr.RestClient.getLocations()).then(
-
-        //success
-        function(data) {
-            console.log(data);
-            Findr.Markers.processMarkers(data);
-        },
-
-        //fail
-        function(error) {
-            console.log(error);
-        }
-    );
-    //var merchantLocations = ''; //get back JSON
-    //Findr.Markers.processMarkers(merchantLocations);
+    navigator.geolocation.getCurrentPosition(Findr.Geo.onGeolocationSuccess, Findr.Geo.onGeolocationError);
 };
+
+//Wait for Cordova to load
+document.addEventListener('deviceready', onDeviceReady, false);
+
+
+//Cordova is ready
+function onDeviceReady() {
+    console.log('loaded');
+}
