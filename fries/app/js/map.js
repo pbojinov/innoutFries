@@ -216,7 +216,7 @@ Findr.RestClient = function () {
         },
         basicAuth = {
             username: 'findr',
-            password: '$showmethelocation$'
+            password: 'showmethelocations'
         };
 
     /**
@@ -232,19 +232,19 @@ Findr.RestClient = function () {
             if (Findr.Cache.merchants) {
 
             }
-            var url = buildUrl('merchants');
+            var url = _buildUrl('merchants'),
+                auth = _buildBaseAuth();
+            console.log(auth);
             jQuery.ajax({
                 type: 'GET',
                 url: url,
                 cache: true,
                 dataType: 'json',
                 crossDomain: true,
-                username: basicAuth.username,
-                password: basicAuth.password,
-                
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(basicAuth.username + basicAuth.password));
-                },
+                headers : {'Authorization': auth},
+//                beforeSend: function (xhr) {
+//                    xhr.setRequestHeader('Authorization', auth);
+//                },
                 success: function (data) {
                     dfd.resolve(data);
                 },
@@ -273,10 +273,22 @@ Findr.RestClient = function () {
      * Help build the full API call url
      * @param route
      */
-    function buildUrl(route) {
+    function _buildUrl(route) {
         var url = endpoint + routes[route];
         console.log(url);
         return url;
+    }
+
+    function _buildBaseAuth() {
+        var token = basicAuth.username + ':' + basicAuth.password,
+            hash;
+        if (typeof btoa === 'function') {
+            hash = btoa(token); //native hash method
+        }
+        else {
+            hash = Base64.encode(token); //else use library
+        }
+        return 'Basic ' + hash;
     }
 
     return {
