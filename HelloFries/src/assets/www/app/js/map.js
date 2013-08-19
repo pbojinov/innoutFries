@@ -479,7 +479,7 @@ Findr.Markers = function () {
                 };
                 marker.infoBox = new InfoBox(options);
 
-                google.maps.event.addListener(marker, 'click', (function (marker) {
+                google.maps.event.addListener(marker, 'mousedown', (function (marker) {
                     return function () {
                         if (currentMarker) {
                             currentMarker.setAnimation(null);
@@ -688,7 +688,7 @@ Findr.CustomUI = function () {
     }
 
     function _addEvents() {
-        centerLocationButton.addEventListener('click', centerLocation, false);
+        centerLocationButton.addEventListener('mousedown', centerLocation, false);
     }
 
     return {
