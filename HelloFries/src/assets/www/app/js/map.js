@@ -10,6 +10,62 @@ var Findr = {
     Markers: {} //map marker manager
 };
 
+Findr.Util = function () {
+
+    function isGoogleExist() {
+        return typeof window.google === 'object';
+    }
+
+    function isGoogleMapsExist() {
+        return typeof window.google.maps === 'object';
+    }
+
+    function loadScript(src, callback) {
+        var script = document.createElement('script'),
+            loaded;
+        script.setAttribute('src', src);
+        if (callback) {
+            script.onreadystatechange = script.onload = function () {
+                if (!loaded) {
+                    callback();
+                }
+                loaded = true;
+            };
+        }
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
+
+    return {
+        loadScript: loadScript,
+        isGoogleExist: isGoogleExist,
+        isGoogleMapsExist: isGoogleMapsExist
+    }
+}();
+
+Findr.AlertManager = function () {
+
+    var currentAlert,
+        previousAlert;
+
+    function alert(message, title) {
+        navigator.notification.alert(
+            message,            // message
+            _alertDismissed,    // callback
+            title,              // title
+            'Done'              // buttonName
+        );
+    }
+
+    // Android / BlackBerry WebWorks (OS 5.0 and higher) / iOS / Tizen
+    function _alertDismissed() {
+
+    }
+
+    return {
+        alert: alert
+    }
+}();
+
 Findr.Cache = function () {
 
     var merchants;
@@ -70,13 +126,6 @@ Findr.Map = function () {
         },
         gmapsUrl = 'http://maps.googleapis.com/maps/api/js?key=AIzaSyCBUF1Kv8dJR0xd2w2BMtxNsAMSsqU7tI0&sensor=true&callback=Findr.Map.mapInit';
 
-    function loadMapsScript() {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = gmapsUrl;
-        document.body.appendChild(script);
-    }
-
     /**
      * The meat of the app initialization happens here
      */
@@ -91,20 +140,34 @@ Findr.Map = function () {
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-        //refactor to load after maps has loaded, otherwise we get google is undefined
-        jQuery.when(Findr.RestClient.getLocations()).then(
+        Findr.Util.loadScript('js/lib/infobox_packed.js', function () {
+            /**
+             * We know the following are loaded:
+             *      - maps
+             *      - markers
+             *      - TODO info box
+             */
 
-            //success
-            function (data) {
-                console.log(data);
-                Findr.Markers.processMarkers(data);
-            },
+                //refactor to load after maps has loaded, otherwise we get google is undefined
+            jQuery.when(Findr.RestClient.getLocations()).then(
 
-            //fail
-            function (error) {
-                console.log(error);
-            }
-        );
+                //success
+                function (data) {
+                    console.log(data);
+                    Findr.Markers.processMarkers(data);
+                },
+
+                //fail
+                function (error) {
+                    console.log(error);
+                }
+
+            ).then(
+                function () {
+                    console.log('done loading markers');
+                }
+            );
+        });
     }
 
     /**
@@ -132,6 +195,29 @@ Findr.Map = function () {
         }
         else {
             throw 'setMapCenter() received invalid parameters. Reason: Parameters must be a number';
+        }
+    }
+
+    /**
+     * Pan to location smoothly
+     * @param lat {float}
+     * @param lng {float}
+     *
+     * Example usage:
+     *      Findr.Map.panTo.(37.4419, -122.1419)
+     */
+    function panTo(lat, lng) {
+        if (typeof lat === 'number' && typeof lng === 'number') {
+            if (Findr.Map.map) {
+                var center = new google.maps.LatLng(lat, lng);
+                Findr.Map.map.panTo(center);
+            }
+            else {
+                throw 'Cant panTo location. Reason: Map does not exist';
+            }
+        }
+        else {
+            throw 'panTo() received invalid parameters. Reason: Parameters must be a number';
         }
     }
 
@@ -187,8 +273,8 @@ Findr.Map = function () {
 
     return {
 
-        //init functions
-        loadMapsScript: loadMapsScript,
+        //expose gmaps URL
+        gmapsUrl: gmapsUrl,
 
         //public google maps needs global function for onload callback
         mapInit: mapInit,
@@ -203,7 +289,8 @@ Findr.Map = function () {
         //setters
         setMapCenter: setMapCenter,
         setMapZoom: setMapZoom,
-        setMapTypeId: setMapTypeId
+        setMapTypeId: setMapTypeId,
+        panTo: panTo
     }
 
 }();
@@ -216,7 +303,7 @@ Findr.RestClient = function () {
         },
         basicAuth = {
             username: 'findr',
-            password: '$showmethelocation$'
+            password: 'showmethelocations'
         };
 
     /**
@@ -232,21 +319,20 @@ Findr.RestClient = function () {
             if (Findr.Cache.merchants) {
 
             }
-            var url = buildUrl('merchants');
+            var url = _buildUrl('merchants'),
+                auth = _buildBaseAuth();
             jQuery.ajax({
                 type: 'GET',
                 url: url,
                 cache: true,
                 dataType: 'json',
                 crossDomain: true,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'Basic ' + Base64.encode(basicAuth.username + ":" + basicAuth.password));
-                },
+                headers: {'Authorization': auth},
                 success: function (data) {
                     dfd.resolve(data);
                 },
                 error: function (error) {
-                    dfd.reject();
+                    dfd.reject(error);
                     //TODO display some error
                 }
             });
@@ -270,10 +356,22 @@ Findr.RestClient = function () {
      * Help build the full API call url
      * @param route
      */
-    function buildUrl(route) {
+    function _buildUrl(route) {
         var url = endpoint + routes[route];
         console.log(url);
         return url;
+    }
+
+    function _buildBaseAuth() {
+        var token = basicAuth.username + ':' + basicAuth.password,
+            hash;
+        if (typeof btoa === 'function') {
+            hash = btoa(token); //native hash method
+        }
+        else {
+            hash = Base64.encode(token); //else use library
+        }
+        return 'Basic ' + hash;
     }
 
     return {
@@ -306,13 +404,15 @@ Findr.Markers = function () {
             var merchant = m[i],
                 lat = merchant.pos.lat,
                 lng = merchant.pos.lng,
-                address = merchant.address,
-                city = merchant.city,
-                _id = merchant._id;
+                data = {
+                    address: merchant.address,
+                    city: merchant.city,
+                    id: merchant._id
+                };
 
             //console.log(city, address, _id, lat, lng);
             var location = new google.maps.LatLng(lat, lng);
-            addMarker(location, address, 'location');
+            addMarker(location, data, 'location');
         }
 
         //after all markers are placed on map, add them to Cluster Manager which will display them
@@ -331,30 +431,59 @@ Findr.Markers = function () {
         }
     }
 
-    function addMarker(location, title, type) {
+    function addMarker(location, data, type) {
         if (type === 'user') {
             var marker = new google.maps.Marker({
                 position: location,
                 map: Findr.Map.map,
                 animation: google.maps.Animation.DROP,
                 icon: 'img/pulse.gif',
-                title: title,
                 optimized: false
             });
             marker.setMap(Findr.Map.map);
         }
         else if (type === 'location') {
-            if ((location !== 'undefined') && (title !== 'undefined')) {
+            if ((location !== 'undefined') && (data !== 'undefined')) {
                 var marker = new google.maps.Marker({
                     position: location,
                     map: Findr.Map.map,
-                    icon: markerIcon,
-                    title: title
+                    icon: markerIcon
                 });
+                marker.specialInfo = {
+                    address: data.address,
+                    city: data.city,
+                    _id: data._id
+                };
+
+                var boxText = document.createElement("div");
+                boxText.style.cssText = "border-radius: 3px; border: 1px solid #333; padding: 20px; background: yellow; padding: 5px; color: #000;";
+                boxText.innerHTML = data.address + '<br/>' + data.city;
+
+                var options = {
+                    content: boxText,
+                    disableAutoPan: false,
+                    maxWidth: 0,
+                    pixelOffset: new google.maps.Size(-140, 0),
+                    zIndex: null,
+                    boxStyle: {
+                        background: "url('http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.9/examples/tipbox.gif') no-repeat",
+                        opacity: 0.75,
+                        width: "200px"
+                    },
+                    closeBoxMargin: "10px 2px 2px 2px",
+                    closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
+                    infoBoxClearance: new google.maps.Size(1, 1),
+                    isHidden: false,
+                    pane: "floatPane",
+                    enableEventPropagation: false
+                };
+                marker.infoBox = new InfoBox(options);
+
                 google.maps.event.addListener(marker, 'click', (function (marker) {
                     return function () {
                         if (currentMarker) {
                             currentMarker.setAnimation(null);
+                            currentMarker.infoBox.close();
                         }
                         currentMarker = marker;
                         if (marker.getAnimation() != null) {
@@ -363,6 +492,9 @@ Findr.Markers = function () {
                         else {
                             marker.setAnimation(google.maps.Animation.BOUNCE);
                         }
+
+                        //TODO add info window code here
+                        marker.infoBox.open(Findr.Map.map, this);
                     }
                 })(marker));
                 markers.push(marker);
@@ -378,7 +510,7 @@ Findr.Markers = function () {
     }
 
     //Remove the overlays from the map, but not from array
-    function clearOverlays () {
+    function clearOverlays() {
         if (markers) {
             var item;
             for (item in markers) {
@@ -388,7 +520,7 @@ Findr.Markers = function () {
     }
 
     //Show overlay items in the array
-    function showOverlayIcons () {
+    function showOverlayIcons() {
         if (markers) {
             var item;
             for (item in markers) {
@@ -414,6 +546,7 @@ Findr.Markers = function () {
         }
     }
 
+    //noinspection JSValidateTypes
     return {
         processMarkers: processMarkers,
         addMarker: addMarker,
@@ -423,37 +556,150 @@ Findr.Markers = function () {
 
 }();
 
-Findr.Geo = function () {
+Findr.InfoBox = function () {
 
+    return {
 
-    function onGeolocationSuccess (position) {
-//        alert('Latitude: '          + position.coords.latitude          + '\n' +
-//            'Longitude: '         + position.coords.longitude         + '\n' +
-//            'Altitude: '          + position.coords.altitude          + '\n' +
-//            'Accuracy: '          + position.coords.accuracy          + '\n' +
-//            'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-//            'Heading: '           + position.coords.heading           + '\n' +
-//            'Speed: '             + position.coords.speed             + '\n' +
-//            'Timestamp: '         + position.timestamp                + '\n');
-
-        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-        Findr.Markers.addMarker(location, '', 'user');
     }
 
-    function onGeolocationError (error) {
-        alert('code: '    + error.code    + '\n' +
-            'message: ' + error.message + '\n');
+}();
+
+Findr.Geo = function () {
+
+    var watchID = null,
+        pos = {
+            lat: '',
+            lng: ''
+        },
+        positionExists = false,
+        accuracy,
+        geoLocationOptions = {
+            maximumAge: 0,
+            timeout: 30000,
+            enableHighAccuracy: true
+        };
+
+    /**
+     * Watches for changes to the device's current position.
+     */
+    function watchPosition() {
+        // Throw an error if no update is received every 30 seconds
+        watchID = navigator.geolocation.watchPosition(_onGeolocationSuccess, _onGeolocationError, geoLocationOptions);
+    }
+
+    /**
+     * Returns the device's current position as a Position object.
+     */
+    function getCurrentPosition() {
+        navigator.geolocation.getCurrentPosition(_onGeolocationSuccess, _onGeolocationError);
+    }
+
+    /**
+     * Stop watching for changes to the device's location
+     *
+     * Should be called when user closes app
+     */
+    function clearWatch() {
+        if (watchID != null) {
+            navigator.geolocation.clearWatch(watchID);
+            watchID = null;
+        }
+    }
+
+    /**
+     * get position of user coordinates if they exist
+     * @returns {*}
+     */
+    function getPositionData() {
+        if ((typeof pos.lat === 'number') && typeof pos.lng === 'number') {
+            return pos;
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    /**
+     * navigator.geolocation callback function
+     *
+     * Draw the users location on the map if it exists
+     * @param position
+     * @private
+     */
+    function _onGeolocationSuccess(position) {
+
+        console.log('we got position');
+        pos.lat = position.coords.latitude;
+        pos.lng = position.coords.longitude;
+        accuracy = position.coords.accuracy;
+        positionExists = true;
+
+        if (Findr.Util.isGoogleMapsExist()) {
+            var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            Findr.Markers.addMarker(location, '', 'user');
+
+            //Enable the user center button
+            Findr.CustomUI.setup();
+        }
+        else {
+            //TODO what do we want to do with location when we do not have maps
+        }
+    }
+
+    function _onGeolocationError(error) {
+        Findr.AlertManager.alert(error.message, error.code);
     }
 
     return {
-        onGeolocationSuccess: onGeolocationSuccess,
-        onGeolocationError: onGeolocationError
+        watchPosition: watchPosition,
+        getCurrentPosition: getCurrentPosition,
+        clearWatch: clearWatch,
+        getPositionData: getPositionData
+    }
+
+}();
+
+Findr.EventManager = function () {
+
+    var events = [];
+
+    function addEvent() {
+
+    }
+
+    return {
+        addEvent: addEvent
+    }
+}();
+
+Findr.CustomUI = function () {
+
+    var centerLocationButton;
+
+    function setup() {
+        centerLocationButton = document.getElementById('centerLocation');
+        jQuery(centerLocationButton).delay(100).animate({"opacity": "1"});
+        _addEvents();
+    }
+
+    function centerLocation() {
+        var coordinates = Findr.Geo.getPositionData();
+        Findr.Map.panTo(coordinates.lat, coordinates.lng);
+    }
+
+    function _addEvents() {
+        centerLocationButton.addEventListener('click', centerLocation, false);
+    }
+
+    return {
+        setup: setup,
+        centerLocation: centerLocation
     }
 }();
 
 window.onload = function () {
-    Findr.Map.loadMapsScript();
-    navigator.geolocation.getCurrentPosition(Findr.Geo.onGeolocationSuccess, Findr.Geo.onGeolocationError);
+    Findr.Util.loadScript(Findr.Map.gmapsUrl);
+    Findr.Geo.watchPosition();
 };
 
 //Wait for Cordova to load

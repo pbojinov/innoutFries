@@ -140,33 +140,34 @@ Findr.Map = function () {
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-        //refactor to load after maps has loaded, otherwise we get google is undefined
-        jQuery.when(Findr.RestClient.getLocations()).then(
+        Findr.Util.loadScript('js/lib/infobox_packed.js', function () {
+            /**
+             * We know the following are loaded:
+             *      - maps
+             *      - markers
+             *      - TODO info box
+             */
 
-            //success
-            function (data) {
-                console.log(data);
-                Findr.Markers.processMarkers(data);
-            },
+                //refactor to load after maps has loaded, otherwise we get google is undefined
+            jQuery.when(Findr.RestClient.getLocations()).then(
 
-            //fail
-            function (error) {
-                console.log(error);
-            }
+                //success
+                function (data) {
+                    console.log(data);
+                    Findr.Markers.processMarkers(data);
+                },
 
-        ).then(
-            function () {
-                console.log('done loading markers');
-                Findr.Util.loadScript('js/lib/infobox_packed.js', function() {
-                    /**
-                     * We know the following are loaded:
-                     *      - maps
-                     *      - markers
-                     *      - TODO info box
-                     */
-                });
-            }
-        );
+                //fail
+                function (error) {
+                    console.log(error);
+                }
+
+            ).then(
+                function () {
+                    console.log('done loading markers');
+                }
+            );
+        });
     }
 
     /**
@@ -403,13 +404,15 @@ Findr.Markers = function () {
             var merchant = m[i],
                 lat = merchant.pos.lat,
                 lng = merchant.pos.lng,
-                address = merchant.address,
-                city = merchant.city,
-                _id = merchant._id;
+                data = {
+                    address: merchant.address,
+                    city: merchant.city,
+                    id: merchant._id
+                };
 
             //console.log(city, address, _id, lat, lng);
             var location = new google.maps.LatLng(lat, lng);
-            addMarker(location, address, 'location');
+            addMarker(location, data, 'location');
         }
 
         //after all markers are placed on map, add them to Cluster Manager which will display them
@@ -428,31 +431,59 @@ Findr.Markers = function () {
         }
     }
 
-    function addMarker(location, title, type) {
+    function addMarker(location, data, type) {
         if (type === 'user') {
             var marker = new google.maps.Marker({
                 position: location,
                 map: Findr.Map.map,
                 animation: google.maps.Animation.DROP,
                 icon: 'img/pulse.gif',
-                title: title,
                 optimized: false
             });
             marker.setMap(Findr.Map.map);
         }
         else if (type === 'location') {
-            if ((location !== 'undefined') && (title !== 'undefined')) {
+            if ((location !== 'undefined') && (data !== 'undefined')) {
                 var marker = new google.maps.Marker({
                     position: location,
                     map: Findr.Map.map,
-                    icon: markerIcon,
-                    title: title
+                    icon: markerIcon
                 });
-                marker.specialInfo = {};
+                marker.specialInfo = {
+                    address: data.address,
+                    city: data.city,
+                    _id: data._id
+                };
+
+                var boxText = document.createElement("div");
+                boxText.style.cssText = "border-radius: 3px; border: 1px solid #333; padding: 20px; background: yellow; padding: 5px; color: #000;";
+                boxText.innerHTML = data.address + '<br/>' + data.city;
+
+                var options = {
+                    content: boxText,
+                    disableAutoPan: false,
+                    maxWidth: 0,
+                    pixelOffset: new google.maps.Size(-140, 0),
+                    zIndex: null,
+                    boxStyle: {
+                        background: "url('http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.9/examples/tipbox.gif') no-repeat",
+                        opacity: 0.75,
+                        width: "200px"
+                    },
+                    closeBoxMargin: "10px 2px 2px 2px",
+                    closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
+                    infoBoxClearance: new google.maps.Size(1, 1),
+                    isHidden: false,
+                    pane: "floatPane",
+                    enableEventPropagation: false
+                };
+                marker.infoBox = new InfoBox(options);
+
                 google.maps.event.addListener(marker, 'click', (function (marker) {
                     return function () {
                         if (currentMarker) {
                             currentMarker.setAnimation(null);
+                            currentMarker.infoBox.close();
                         }
                         currentMarker = marker;
                         if (marker.getAnimation() != null) {
@@ -461,6 +492,9 @@ Findr.Markers = function () {
                         else {
                             marker.setAnimation(google.maps.Animation.BOUNCE);
                         }
+
+                        //TODO add info window code here
+                        marker.infoBox.open(Findr.Map.map, this);
                     }
                 })(marker));
                 markers.push(marker);

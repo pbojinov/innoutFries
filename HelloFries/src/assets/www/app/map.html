@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="format-detection" content="telephone=no" />
+    <meta charset="utf-8"/>
+    <meta name="format-detection" content="telephone=no"/>
 
     <!-- Required meta viewport tag. Do not modify this! -->
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"/>
 
     <title>Fries Template</title>
 
@@ -26,6 +27,8 @@
 
     <!--extend styles-->
     <link rel="stylesheet" href="css/action-bar-custom.css">
+    <link rel="stylesheet" href="css/buttons-custom.css">
+    <link rel="stylesheet" href="css/animations.css">
 
 </head>
 <body manifest="map.appcache" ontouchstart="">
@@ -38,6 +41,7 @@
         <a href="#" class="app-icon action">
             <img src="img/sign-plain.png"/>
         </a>
+
         <h1 class="title">Findr</h1>
 
         <!-- Add action buttons here -->
@@ -46,6 +50,12 @@
 
     <div class="content">
         <!-- Add anything here -->
+        <div id="centerLocation">
+            <a href="#" class="action" title="center">
+                <i class="icon-location-searching"></i>
+                <!--target, off, searching-->
+            </a>
+        </div>
         <div id="map-canvas" style="height: 100%"></div>
     </div>
 </div>
