@@ -456,7 +456,7 @@ Findr.Markers = function () {
                 };
 
                 var boxText = document.createElement("div");
-                boxText.style.cssText = "border-radius: 3px; border: 1px solid #333; padding: 20px; background: yellow; padding: 5px; color: #000;";
+                boxText.style.cssText = "border-radius: 3px; border: 2px solid #333; margin-top: 8px; padding: 20px; background: yellow; padding: 5px; color: #000;";
                 boxText.innerHTML = data.address + '<br/>' + data.city;
 
                 var options = {
