@@ -10,7 +10,7 @@ var Findr = {
     Markers: {} //map marker manager
 };
 
-Findr.Helper = function () {
+Findr.Util = function () {
 
     function isGoogleExist() {
         return typeof window.google === 'object';
@@ -20,7 +20,23 @@ Findr.Helper = function () {
         return typeof window.google.maps === 'object';
     }
 
+    function loadScript(src, callback) {
+        var script = document.createElement('script'),
+            loaded;
+        script.setAttribute('src', src);
+        if (callback) {
+            script.onreadystatechange = script.onload = function () {
+                if (!loaded) {
+                    callback();
+                }
+                loaded = true;
+            };
+        }
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
+
     return {
+        loadScript: loadScript,
         isGoogleExist: isGoogleExist,
         isGoogleMapsExist: isGoogleMapsExist
     }
@@ -110,13 +126,6 @@ Findr.Map = function () {
         },
         gmapsUrl = 'http://maps.googleapis.com/maps/api/js?key=AIzaSyCBUF1Kv8dJR0xd2w2BMtxNsAMSsqU7tI0&sensor=true&callback=Findr.Map.mapInit';
 
-    function loadMapsScript() {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = gmapsUrl;
-        document.body.appendChild(script);
-    }
-
     /**
      * The meat of the app initialization happens here
      */
@@ -143,6 +152,19 @@ Findr.Map = function () {
             //fail
             function (error) {
                 console.log(error);
+            }
+
+        ).then(
+            function () {
+                console.log('done loading markers');
+                Findr.Util.loadScript('js/lib/infobox_packed.js', function() {
+                    /**
+                     * We know the following are loaded:
+                     *      - maps
+                     *      - markers
+                     *      - TODO info box
+                     */
+                });
             }
         );
     }
@@ -250,8 +272,8 @@ Findr.Map = function () {
 
     return {
 
-        //init functions
-        loadMapsScript: loadMapsScript,
+        //expose gmaps URL
+        gmapsUrl: gmapsUrl,
 
         //public google maps needs global function for onload callback
         mapInit: mapInit,
@@ -426,6 +448,7 @@ Findr.Markers = function () {
                     icon: markerIcon,
                     title: title
                 });
+                marker.specialInfo = {};
                 google.maps.event.addListener(marker, 'click', (function (marker) {
                     return function () {
                         if (currentMarker) {
@@ -495,6 +518,14 @@ Findr.Markers = function () {
         addMarker: addMarker,
         markers: markers,
         showOverlayIcons: showOverlayIcons
+    }
+
+}();
+
+Findr.InfoBox = function () {
+
+    return {
+
     }
 
 }();
@@ -569,7 +600,7 @@ Findr.Geo = function () {
         accuracy = position.coords.accuracy;
         positionExists = true;
 
-        if (Findr.Helper.isGoogleMapsExist()) {
+        if (Findr.Util.isGoogleMapsExist()) {
             var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
             Findr.Markers.addMarker(location, '', 'user');
 
@@ -612,7 +643,6 @@ Findr.CustomUI = function () {
     var centerLocationButton;
 
     function setup() {
-        console.log('when dis happen');
         centerLocationButton = document.getElementById('centerLocation');
         jQuery(centerLocationButton).delay(100).animate({"opacity": "1"});
         _addEvents();
@@ -634,7 +664,7 @@ Findr.CustomUI = function () {
 }();
 
 window.onload = function () {
-    Findr.Map.loadMapsScript();
+    Findr.Util.loadScript(Findr.Map.gmapsUrl);
     Findr.Geo.watchPosition();
 };
 
