@@ -140,6 +140,10 @@ Findr.Map = function () {
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
+        google.maps.event.addListener(Findr.Map.map, 'click', function(event) {
+            Findr.InfoBox.close();
+        });
+
         Findr.Util.loadScript('js/lib/infobox_packed.js', function () {
             /**
              * We know the following are loaded:
@@ -466,36 +470,12 @@ Findr.Markers = function () {
                     city: data.city,
                     _id: data._id
                 };
-
-                var boxText = document.createElement("div");
-                boxText.style.cssText = "border-radius: 3px; border: 2px solid #333; margin-top: 8px; padding: 20px; background: yellow; padding: 5px; color: #000;";
-                boxText.innerHTML = data.address + '<br/>' + data.city + '<br/><button type="button" class="btn btn-block">Directions</button>';
-
-                var options = {
-                    content: boxText,
-                    disableAutoPan: false,
-                    maxWidth: 0,
-                    pixelOffset: new google.maps.Size(-140, 0),
-                    zIndex: null,
-                    boxStyle: {
-                        background: "url('http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.9/examples/tipbox.gif') no-repeat",
-                        opacity: 0.75,
-                        width: "200px"
-                    },
-                    closeBoxMargin: "10px 2px 2px 2px",
-                    closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
-                    infoBoxClearance: new google.maps.Size(1, 1),
-                    isHidden: false,
-                    pane: "floatPane",
-                    enableEventPropagation: false
-                };
-                marker.infoBox = new InfoBox(options);
-
                 google.maps.event.addListener(marker, 'mousedown', (function (marker) {
                     return function () {
                         if (currentMarker) {
                             currentMarker.setAnimation(null);
-                            currentMarker.infoBox.close();
+                            //currentMarker.infoBox.close();
+                            Findr.InfoBox.updateInfoBox(marker);
                         }
                         currentMarker = marker;
                         if (marker.getAnimation() != null) {
@@ -505,7 +485,8 @@ Findr.Markers = function () {
                             marker.setAnimation(google.maps.Animation.BOUNCE);
                         }
 
-                        marker.infoBox.open(Findr.Map.map, this);
+                        //marker.infoBox.open(Findr.Map.map, this);
+                        Findr.InfoBox.open(marker);
                     }
                 })(marker));
                 markers.push(marker);
@@ -570,17 +551,62 @@ Findr.Markers = function () {
 Findr.InfoBox = function () {
 
     var _bottomNav,
+        _infoBox,
+        _city,
+        _address,
         _isVisible = false,
-        _toggleSpeed = 'slow';
+        _toggleSpeed = 'slow',
+        _currentMarker = {
+            address:'',
+            city: '',
+            id: ''
+        }
+
+    function updateInfoBox(marker) {
+        _currentMarker.address = marker.specialInfo.address;
+        _currentMarker.city = marker.specialInfo.address;
+        _currentMarker.id = marker.specialInfo._id;
+        _setInfoBoxData(); //set box with new data
+    }
+
+    function open(marker) {
+        _currentMarker.address = marker.specialInfo.address;
+        _currentMarker.city = marker.specialInfo.address;
+        _currentMarker.id = marker.specialInfo._id;
+        _setInfoBoxData(); //set box with new data
+
+        _isVisible = false;
+        toggleInfoBox(); //then open it up
+    }
+
+    function close() {
+        _isVisible = true;
+        toggleInfoBox();
+    }
+
+    function _setInfoBoxData() {
+        //will always be true on first run, so we cache selectors
+        if (typeof _infoBox !== 'object') {
+            _infoBox = document.getElementById('infoBox');
+            _city = jQuery(_infoBox).find('.city');
+            _address = jQuery(_infoBox).find('.address');
+        }
+        _city.html(_currentMarker.city);
+        _address.html(_currentMarker.address);
+        jQuery(_infoBox).data('id', _currentMarker.id);
+    }
 
     function toggleInfoBox() {
+        //will always be true on first run, so we cache selectors
         if (typeof _bottomNav !== 'object') {
             _bottomNav = document.getElementById('bottomNav');
         }
+        //hide it
         if (_isVisible) {
             jQuery(bottomNav).slideUp(_toggleSpeed); //slide up when visible
             _isVisible = false;
         }
+        //show it
         else {
             jQuery(bottomNav).slideDown(_toggleSpeed); //slide down when hidden
             _isVisible = true;
@@ -593,7 +619,10 @@ Findr.InfoBox = function () {
 
     return {
         isInfoVisible: isInfoVisible,
-        toggleInfoBox: toggleInfoBox
+        toggleInfoBox: toggleInfoBox,
+        updateInfoBox: updateInfoBox,
+        close: close,
+        open: open
     }
 
 }();
