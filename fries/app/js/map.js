@@ -17,7 +17,7 @@ Findr.Util = function () {
     }
 
     function isGoogleMapsExist() {
-        return typeof window.google.maps === 'object';
+        return typeof Findr.Map.map === 'object';
     }
 
     function loadScript(src, callback) {
@@ -390,7 +390,12 @@ Findr.RestClient = function () {
 Findr.Markers = function () {
 
     var markers = [],
+        svgMarker = {
+            big: 'M132.518,30.377l-11.724-12.9l-0.35,7.349L9.015,3.428l1.665,0.32c-0.214-0.023-2.102-0.32-2.322-0.32c-3.327,0-6.025,2.697-6.025,6.025c0,1.624,0.643,3.096,1.688,4.18l55.751,73.145h3.359h4.824h4.722l-3.446-5.664l0.052,0.006c0,0-0.73-1.166-1.981-3.176L65.024,74.2h-0.048c-5.961-9.614-16.818-27.256-24.133-39.914c-6.958-12.04-3.582-11.887,5.862-10.258l73.601,9.607l-0.489,6.513L132.518,30.377z',
+            small: 'M22.886,5.406l-1.983-2.182l-0.059,1.243l-18.85-3.62l0.282,0.054C2.24,0.898,1.92,0.847,1.883,0.847c-0.563,0-1.019,0.456-1.019,1.019c0,0.275,0.109,0.524,0.286,0.707l9.431,12.373h0.568h0.816h0.799l-0.583-0.958l0.009,0.001c0,0-0.123-0.197-0.335-0.537l-0.385-0.633h-0.008c-1.008-1.626-2.845-4.611-4.082-6.752C6.201,4.03,6.772,4.056,8.37,4.332l12.45,1.625l-0.083,1.102L22.886,5.406z'
+        },
         markerIcon = 'img/sign.png',
+        userIcon = 'img/pulse.gif',
         markerClusterer,
         markerClustererOptions = {
             maxZoom: '',
@@ -437,7 +442,7 @@ Findr.Markers = function () {
                 position: location,
                 map: Findr.Map.map,
                 animation: google.maps.Animation.DROP,
-                icon: 'img/pulse.gif',
+                icon: userIcon,
                 optimized: false
             });
             marker.setMap(Findr.Map.map);
@@ -447,7 +452,14 @@ Findr.Markers = function () {
                 var marker = new google.maps.Marker({
                     position: location,
                     map: Findr.Map.map,
-                    icon: markerIcon
+                    icon: {
+                        path: svgMarker.small,
+                        fillOpacity: 1,
+                        fillColor: '#FDEE11',
+                        strokeColor: '#DB1F26',
+                        strokeWeight: 2,
+                        scale: 2
+                    }
                 });
                 marker.specialInfo = {
                     address: data.address,
@@ -457,7 +469,7 @@ Findr.Markers = function () {
 
                 var boxText = document.createElement("div");
                 boxText.style.cssText = "border-radius: 3px; border: 2px solid #333; margin-top: 8px; padding: 20px; background: yellow; padding: 5px; color: #000;";
-                boxText.innerHTML = data.address + '<br/>' + data.city;
+                boxText.innerHTML = data.address + '<br/>' + data.city + '<br/><button type="button" class="btn btn-block">Directions</button>';
 
                 var options = {
                     content: boxText,
@@ -493,7 +505,6 @@ Findr.Markers = function () {
                             marker.setAnimation(google.maps.Animation.BOUNCE);
                         }
 
-                        //TODO add info window code here
                         marker.infoBox.open(Findr.Map.map, this);
                     }
                 })(marker));
@@ -558,8 +569,31 @@ Findr.Markers = function () {
 
 Findr.InfoBox = function () {
 
-    return {
+    var _bottomNav,
+        _isVisible = false,
+        _toggleSpeed = 'slow';
 
+    function toggleInfoBox() {
+        if (typeof _bottomNav !== 'object') {
+            _bottomNav = document.getElementById('bottomNav');
+        }
+        if (_isVisible) {
+            jQuery(bottomNav).slideUp(_toggleSpeed); //slide up when visible
+            _isVisible = false;
+        }
+        else {
+            jQuery(bottomNav).slideDown(_toggleSpeed); //slide down when hidden
+            _isVisible = true;
+        }
+    }
+
+    function isInfoVisible() {
+        return _isVisible;
+    }
+
+    return {
+        isInfoVisible: isInfoVisible,
+        toggleInfoBox: toggleInfoBox
     }
 
 }();

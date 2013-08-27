@@ -25,9 +25,14 @@
     <link rel="stylesheet" href="../lib/css/stack.css">
     <link rel="stylesheet" href="../lib/css/sliders.css">
 
+    <!--less styles-->
+    <!--<link rel="stylesheet/less" type="text/css" href="css/base-ui.less">-->
+    <!--<script type="text/javascript" src="bower_components/less.js/dist/less-1.4.2.min.js"></script>-->
+
     <!--extend styles-->
     <link rel="stylesheet" href="css/action-bar-custom.css">
     <link rel="stylesheet" href="css/buttons-custom.css">
+    <link rel="stylesheet" href="css/base-ui.css">
     <link rel="stylesheet" href="css/animations.css">
 
 </head>
@@ -50,11 +55,25 @@
 
     <div class="content">
         <!-- Add anything here -->
-        <div id="centerLocation">
-            <a href="#" class="action" title="center">
-                <i class="icon-location-searching"></i>
-                <!--target, off, searching-->
-            </a>
+        <div id="bottomNav">
+            <div id="infoBox">
+                <div class="col5">
+                    <div class="city">Santa Clara</div>
+                    <div class="address">50 Ranch Dr. 95035 Santa Clara</div>
+                </div>
+                <div class="col3">
+                    <a href="#" class="action" title="Directions" id="directions-link">
+                        <i class="icon-direction"></i>
+                        <div class="description">Directions</div>
+                    </a>
+                </div>
+            </div>
+            <div id="centerLocation">
+                <a href="#" class="action" title="center">
+                    <i class="icon-location-searching"></i>
+                    <!--target, off, searching-->
+                </a>
+            </div>
         </div>
         <div id="map-canvas" style="height: 100%"></div>
     </div>

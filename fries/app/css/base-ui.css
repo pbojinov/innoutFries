@@ -1,0 +1,115 @@
+/**
+ * Author: petar
+ * Date: 8/4/13
+ */
+.shadow-top {
+  box-shadow: 0 0 10px -2px #333333;
+}
+#map-canvas {
+  height: 100%;
+}
+/* Bottom Navigation - Tooltips */
+#bottomNav {
+  position: absolute;
+  z-index: 10;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: none;
+  background-color: #FFFFFF;
+  height: 90px;
+  box-shadow: 0 0 10px -2px #333333;
+}
+/* Tooltip left hand side items */
+.city {
+  color: #222222;
+  font-weight: bold;
+  font-size: 17px;
+}
+.address {
+  color: #9A9A9A;
+  font-size: 16px;
+}
+/* Tooltip action items */
+.description {
+  font-size: 15px;
+}
+#directions-link {
+  position: relative;
+  top: -8px;
+  left: -8px;
+}
+#directions-link .icon-direction {
+  color: #3DB6E3;
+  font-size: 40px;
+  width: 100%;
+  text-align: center;
+}
+/* End tooltip */
+/****************/
+.col {
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+/* Custom Grid */
+.col1 {
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+  width: 10%;
+}
+.col2 {
+  width: 20%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col3 {
+  width: 30%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col4 {
+  width: 40%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col5 {
+  width: 50%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col6 {
+  width: 60%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col7 {
+  width: 70%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col8 {
+  width: 80%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col9 {
+  width: 90%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
+.col10 {
+  width: 100%;
+  float: left;
+  line-height: 23px;
+  padding: 20px 20px 20px 25px;
+}
