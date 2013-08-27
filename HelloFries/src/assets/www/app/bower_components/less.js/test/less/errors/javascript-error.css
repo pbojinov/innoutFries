@@ -1,0 +1,5 @@
+SyntaxError: JavaScript evaluation error: 'TypeError: Cannot call method 'toJS' of undefined' in /Users/petar/Dropbox/dev/2013Projects/2013Projects/innoutFries/HelloFries/src/assets/www/app/bower_components/less.js/test/less/errors/javascript-error.less on line 2, column 27:
+1 .scope {
+2     var: `this.foo.toJS()`;
+3 }
+

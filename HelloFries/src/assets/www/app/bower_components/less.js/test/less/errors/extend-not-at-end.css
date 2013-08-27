@@ -1,0 +1,4 @@
+SyntaxError: Extend can only be used at the end of selector in /Users/petar/Dropbox/dev/2013Projects/2013Projects/innoutFries/HelloFries/src/assets/www/app/bower_components/less.js/test/less/errors/extend-not-at-end.less on line 1, column 21:
+1 .a:extend(.b all).c {
+2   property: red;
+

@@ -140,7 +140,7 @@ Findr.Map = function () {
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-        google.maps.event.addListener(Findr.Map.map, 'click', function(event) {
+        google.maps.event.addListener(Findr.Map.map, 'mousedown', function(event) {
             Findr.InfoBox.close();
         });
 
@@ -564,14 +564,14 @@ Findr.InfoBox = function () {
 
     function updateInfoBox(marker) {
         _currentMarker.address = marker.specialInfo.address;
-        _currentMarker.city = marker.specialInfo.address;
+        _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
         _setInfoBoxData(); //set box with new data
     }
 
     function open(marker) {
         _currentMarker.address = marker.specialInfo.address;
-        _currentMarker.city = marker.specialInfo.address;
+        _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
         _setInfoBoxData(); //set box with new data
 
