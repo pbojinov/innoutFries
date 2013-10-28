@@ -414,6 +414,8 @@ Findr.Markers = function () {
                 data = {
                     address: merchant.address,
                     city: merchant.city,
+                    lat: merchant.pos.lat,
+                    lng:  merchant.pos.lng,
                     id: merchant._id
                 };
 
@@ -467,7 +469,9 @@ Findr.Markers = function () {
                 marker.specialInfo = {
                     address: data.address,
                     city: data.city,
-                    _id: data._id
+                    _id: data._id,
+                    lng: data.lng,
+                    lat: data.lat
                 };
                 google.maps.event.addListener(marker, 'mousedown', (function (marker) {
                     return function () {
@@ -553,11 +557,14 @@ Findr.InfoBox = function () {
         _infoBox,
         _city,
         _address,
+        _directionsButton,
         _isVisible = false,
         _toggleSpeed = 'slow',
         _currentMarker = {
             address: '',
             city: '',
+            lat: '',
+            lng: '',
             id: ''
         };
 
@@ -565,6 +572,8 @@ Findr.InfoBox = function () {
         _currentMarker.address = marker.specialInfo.address;
         _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
+        _currentMarker.lat = marker.specialInfo.lat;
+        _currentMarker.lng = marker.specialInfo.lng;
         _setInfoBoxData(); //set box with new data
     }
 
@@ -572,6 +581,8 @@ Findr.InfoBox = function () {
         _currentMarker.address = marker.specialInfo.address;
         _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
+        _currentMarker.lat = marker.specialInfo.lat;
+        _currentMarker.lng = marker.specialInfo.lng;
         _setInfoBoxData(); //set box with new data
 
         _isVisible = false;
@@ -589,9 +600,12 @@ Findr.InfoBox = function () {
             _infoBox = document.getElementById('infoBox');
             _city = jQuery(_infoBox).find('.city');
             _address = jQuery(_infoBox).find('.address');
+            _directionsButton = document.getElementById('directions-link');
         }
+        var geoUrl = 'geo:' + _currentMarker.lat + ',' + _currentMarker.lng; //geo: lat, lng -> 'geo:38.897096,-77.036545'
         _city.html(_currentMarker.city);
         _address.html(_currentMarker.address);
+        _directionsButton.setAttribute('href', geoUrl);
         jQuery(_infoBox).data('id', _currentMarker.id);
     }
 

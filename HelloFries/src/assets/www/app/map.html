@@ -54,25 +54,30 @@
     </header>
 
     <div class="content">
+
         <!-- Add anything here -->
         <div id="bottomNav">
-            <div id="infoBox" data-id="">
-                <div class="col4">
-                    <div class="city">Santa Clara</div>
-                    <div class="address">50 Ranch Dr. 95035 Santa Clara</div>
-                </div>
-                <div class="col2">
-                    <a href="#" class="action" title="Directions" id="directions-link">
-                        <i class="icon-direction"></i>
-                        <div class="description">Directions</div>
-                    </a>
-                </div>
-            </div>
+
+            <!-- center me button -->
             <div id="centerLocation">
                 <a href="#" class="action" title="center">
                     <i class="icon-location-searching"></i>
                     <!--target, off, searching-->
                 </a>
+            </div>
+
+            <!-- directions button and address, this slides up and down -->
+            <div id="infoBox" data-id="">
+                <div class="col-left">
+                    <div class="city"></div>
+                    <div class="address"></div>
+                </div>
+                <div class="col-right">
+                    <a href="#" class="action" title="Directions" id="directions-link">
+                        <i class="icon-direction"></i>
+                        <div class="description">Directions</div>
+                    </a>
+                </div>
             </div>
         </div>
         <div id="map-canvas" style="height: 100%"></div>
@@ -89,6 +94,7 @@
 <script src="js/lib/jquery-1.10.2.min.js"></script>
 <script src="js/lib/webtoolkit.base64.js"></script>
 <script src="js/lib/markerclusterer_compiled.js"></script>
+<script src="js/lib/snap.min.js"></script>
 
 <!-- My library -->
 <script src="js/map.js"></script>

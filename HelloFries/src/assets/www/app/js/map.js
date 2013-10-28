@@ -140,38 +140,36 @@ Findr.Map = function () {
         };
         Findr.Map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-        google.maps.event.addListener(Findr.Map.map, 'mousedown', function(event) {
+        google.maps.event.addListener(Findr.Map.map, 'mousedown', function (event) {
             Findr.InfoBox.close();
         });
 
-        Findr.Util.loadScript('js/lib/infobox_packed.js', function () {
-            /**
-             * We know the following are loaded:
-             *      - maps
-             *      - markers
-             *      - TODO info box
-             */
+        /**
+         * We know the following are loaded:
+         *      - maps
+         *      - markers
+         *      - TODO info box
+         */
 
-                //refactor to load after maps has loaded, otherwise we get google is undefined
-            jQuery.when(Findr.RestClient.getLocations()).then(
+            //refactor to load after maps has loaded, otherwise we get google is undefined
+        jQuery.when(Findr.RestClient.getLocations()).then(
 
-                //success
-                function (data) {
-                    console.log(data);
-                    Findr.Markers.processMarkers(data);
-                },
+            //success
+            function (data) {
+                console.log(data);
+                Findr.Markers.processMarkers(data);
+            },
 
-                //fail
-                function (error) {
-                    console.log(error);
-                }
+            //fail
+            function (error) {
+                console.log(error);
+            }
 
-            ).then(
-                function () {
-                    console.log('done loading markers');
-                }
-            );
-        });
+        ).then(
+            function () {
+                console.log('done loading markers');
+            }
+        );
     }
 
     /**
@@ -416,6 +414,8 @@ Findr.Markers = function () {
                 data = {
                     address: merchant.address,
                     city: merchant.city,
+                    lat: merchant.pos.lat,
+                    lng:  merchant.pos.lng,
                     id: merchant._id
                 };
 
@@ -441,8 +441,9 @@ Findr.Markers = function () {
     }
 
     function addMarker(location, data, type) {
+        var marker;
         if (type === 'user') {
-            var marker = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 position: location,
                 map: Findr.Map.map,
                 animation: google.maps.Animation.DROP,
@@ -453,7 +454,7 @@ Findr.Markers = function () {
         }
         else if (type === 'location') {
             if ((location !== 'undefined') && (data !== 'undefined')) {
-                var marker = new google.maps.Marker({
+                marker = new google.maps.Marker({
                     position: location,
                     map: Findr.Map.map,
                     icon: {
@@ -468,7 +469,9 @@ Findr.Markers = function () {
                 marker.specialInfo = {
                     address: data.address,
                     city: data.city,
-                    _id: data._id
+                    _id: data._id,
+                    lng: data.lng,
+                    lat: data.lat
                 };
                 google.maps.event.addListener(marker, 'mousedown', (function (marker) {
                     return function () {
@@ -554,18 +557,23 @@ Findr.InfoBox = function () {
         _infoBox,
         _city,
         _address,
+        _directionsButton,
         _isVisible = false,
         _toggleSpeed = 'slow',
         _currentMarker = {
-            address:'',
+            address: '',
             city: '',
+            lat: '',
+            lng: '',
             id: ''
-        }
+        };
 
     function updateInfoBox(marker) {
         _currentMarker.address = marker.specialInfo.address;
         _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
+        _currentMarker.lat = marker.specialInfo.lat;
+        _currentMarker.lng = marker.specialInfo.lng;
         _setInfoBoxData(); //set box with new data
     }
 
@@ -573,6 +581,8 @@ Findr.InfoBox = function () {
         _currentMarker.address = marker.specialInfo.address;
         _currentMarker.city = marker.specialInfo.city;
         _currentMarker.id = marker.specialInfo._id;
+        _currentMarker.lat = marker.specialInfo.lat;
+        _currentMarker.lng = marker.specialInfo.lng;
         _setInfoBoxData(); //set box with new data
 
         _isVisible = false;
@@ -590,25 +600,28 @@ Findr.InfoBox = function () {
             _infoBox = document.getElementById('infoBox');
             _city = jQuery(_infoBox).find('.city');
             _address = jQuery(_infoBox).find('.address');
+            _directionsButton = document.getElementById('directions-link');
         }
+        var geoUrl = 'geo:' + _currentMarker.lat + ',' + _currentMarker.lng; //geo: lat, lng -> 'geo:38.897096,-77.036545'
         _city.html(_currentMarker.city);
         _address.html(_currentMarker.address);
+        _directionsButton.setAttribute('href', geoUrl);
         jQuery(_infoBox).data('id', _currentMarker.id);
     }
 
     function toggleInfoBox() {
         //will always be true on first run, so we cache selectors
         if (typeof _bottomNav !== 'object') {
-            _bottomNav = document.getElementById('bottomNav');
+            _bottomNav = document.getElementById('infoBox');
         }
         //hide it
         if (_isVisible) {
-            jQuery(bottomNav).slideUp(_toggleSpeed); //slide up when visible
+            jQuery(_bottomNav).slideUp(_toggleSpeed); //slide up when visible
             _isVisible = false;
         }
         //show it
         else {
-            jQuery(bottomNav).slideDown(_toggleSpeed); //slide down when hidden
+            jQuery(_bottomNav).slideDown(_toggleSpeed); //slide down when hidden
             _isVisible = true;
         }
     }
