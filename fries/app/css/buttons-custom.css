@@ -2,9 +2,8 @@
  * Author: petar
  * Date: 8/18/13
  */
-#centerLocation {
-    opacity: 0;
-    float: right;
+
+.findr-action-button {
     z-index: 99;
     border: solid 1px #ccc;
     border-radius: 3px;
@@ -13,9 +12,24 @@
     height: 48px;
     margin: 20px;
 }
-#centerLocation:active {
+
+.findr-action-button:active {
     background-color: #ffb288;
     border: solid 1px #fff;
+}
+
+#toggleDrawer {
+    opacity: 1;
+    float: left;
+    position: absolute;
+    left: -55px;
+    -webkit-transform: rotate(180deg) scale(1.8,1);
+    transform: rotate(180deg) scale(1.8,1);
+}
+
+#centerLocation {
+    opacity: 0;
+    float: right;
 }
 
 #infoBox {

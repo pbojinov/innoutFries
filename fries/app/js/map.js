@@ -602,6 +602,20 @@ Findr.InfoBox = function () {
             _address = jQuery(_infoBox).find('.address');
             _directionsButton = document.getElementById('directions-link');
         }
+        /*
+         * TODO try this - http://stackoverflow.com/questions/8310300/open-native-maps-app-from-phonegap
+
+        $('#map').bind('tap', function(){
+             var url = 'http://maps.google.com/maps?';
+             url += 'q=[place_name]';
+             url += '&near=';
+             url += [lat];
+             url += ',';
+             url += [lon];
+             url += '&z=15';
+             // open the native maps app by calling window location
+             window.location = url;
+        }); */
         var geoUrl = 'geo:' + _currentMarker.lat + ',' + _currentMarker.lng; //geo: lat, lng -> 'geo:38.897096,-77.036545'
         _city.html(_currentMarker.city);
         _address.html(_currentMarker.address);
@@ -611,17 +625,17 @@ Findr.InfoBox = function () {
 
     function toggleInfoBox() {
         //will always be true on first run, so we cache selectors
-        if (typeof _bottomNav !== 'object') {
-            _bottomNav = document.getElementById('infoBox');
+        if (typeof _infoBox !== 'object') {
+            _infoBox = document.getElementById('infoBox');
         }
         //hide it
         if (_isVisible) {
-            jQuery(_bottomNav).slideUp(_toggleSpeed); //slide up when visible
+            jQuery(_infoBox).slideUp(_toggleSpeed); //slide up when visible
             _isVisible = false;
         }
         //show it
         else {
-            jQuery(_bottomNav).slideDown(_toggleSpeed); //slide down when hidden
+            jQuery(_infoBox).slideDown(_toggleSpeed); //slide down when hidden
             _isVisible = true;
         }
     }

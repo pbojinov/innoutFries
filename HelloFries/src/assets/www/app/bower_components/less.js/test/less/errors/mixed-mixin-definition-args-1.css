@@ -1,4 +1,4 @@
-SyntaxError: Cannot mix ; and , as delimiter types in /Users/petar/Dropbox/dev/2013Projects/2013Projects/innoutFries/HelloFries/src/assets/www/app/bower_components/less.js/test/less/errors/mixed-mixin-definition-args-1.less on line 5, column 30:
+SyntaxError: Cannot mix ; and , as delimiter types in /Users/petar/Dropbox/Dev/2013Projects/2013Projects/innoutFries/HelloFries/src/assets/www/app/bower_components/less.js/test/less/errors/mixed-mixin-definition-args-1.less on line 5, column 30:
 4 .mixin-test {
 5     .mixin(@a: 5; @b: 6, @c: 7);
 6 }
