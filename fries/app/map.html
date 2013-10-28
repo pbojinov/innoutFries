@@ -39,59 +39,80 @@
 <body manifest="map.appcache" ontouchstart="">
 
 <!-- All your pages must be wrapped in a div.page so that stack.js works -->
-<div class="page">
+<div class="page" id="pages">
 
-    <header class="action-bar fixed-top">
-        <!--Logo and back button -->
-        <a href="#" class="app-icon action">
-            <img src="img/sign-plain.png"/>
-        </a>
+    <div class="snap-drawer">
+        <div class="left-drawer">
+            <ul>
+                <li><a href="#">Default</a></li>
+                <li><a href="#">No Drag</a></li>
+                <li><a href="#">Drag Element</a></li>
+                <li><a href="#">Right Disabled</a></li>
+                <li><a href="#">Hyperextension Disabled</a></li>
+                <li><a href="#">Skinny Threshold</a></li>
+                <li><a href="#">Toggles</a></li>
+                <li><a href="#">Class Names</a></li>
+                <li><a href="#">Expanding</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Ratchet</a></li>
+            </ul>
+        </div>
+    </div>
 
-        <h1 class="title">Findr</h1>
+    <div id="snap-wrap-page">
+        <header class="action-bar fixed-top">
+            <!--Logo and back button -->
+            <a href="#" class="app-icon action">
+                <img src="img/sign-plain.png"/>
+            </a>
 
-        <!-- Add action buttons here -->
-        <!-- end action buttons -->
-    </header>
+            <h1 class="title">Findr</h1>
 
-    <div class="content">
+            <!-- Add action buttons here -->
+            <!-- end action buttons -->
+        </header>
 
-        <!-- Add anything here -->
-        <div id="bottomNav">
+        <div class="content">
 
-            <!-- center me button -->
-            <div id="centerLocation" class="findr-action-button">
-                <a href="#" class="action" title="center">
-                    <i class="icon-location-searching"></i>
-                    <!--target, off, searching-->
-                </a>
-            </div>
+            <!-- Add anything here -->
+            <div id="bottomNav">
 
-            <!-- toggle drawer button -->
-            <div id="toggleDrawer" class="findr-action-button">
-                <a href="#" class="action" title="center">
-                    <i class="icon-sort-by-size"></i>
-                    <!--target, off, searching-->
-                </a>
-            </div>
-
-
-            <!-- directions button and address, this slides up and down -->
-            <div id="infoBox" data-id="">
-                <div class="col-left">
-                    <div class="city"></div>
-                    <div class="address"></div>
-                </div>
-                <div class="col-right">
-                    <a href="#" class="action" title="Directions" id="directions-link">
-                        <i class="icon-direction"></i>
-                        <div class="description">Directions</div>
+                <!-- center me button -->
+                <div id="centerLocation" class="findr-action-button">
+                    <a href="#" class="action" title="center">
+                        <i class="icon-location-searching"></i>
+                        <!--target, off, searching-->
                     </a>
                 </div>
+
+                <!-- toggle drawer button -->
+                <div id="toggleDrawer" class="findr-action-button">
+                    <a href="#" class="action" title="center">
+                        <i class="icon-sort-by-size"></i>
+                        <!--target, off, searching-->
+                    </a>
+                </div>
+
+
+                <!-- directions button and address, this slides up and down -->
+                <div id="infoBox" data-id="">
+                    <div class="col-left">
+                        <div class="city"></div>
+                        <div class="address"></div>
+                    </div>
+                    <div class="col-right">
+                        <a href="#" class="action" title="Directions" id="directions-link">
+                            <i class="icon-direction"></i>
+                            <div class="description">Directions</div>
+                        </a>
+                    </div>
+                </div>
             </div>
+            <div id="map-canvas" style="height: 100%"></div>
         </div>
-        <div id="map-canvas" style="height: 100%"></div>
-    </div>
-</div>
+    </div><!--end div snap-wrap-page>
+
+</div><!--end class page-->
 
 <!-- Scripts at the bottom -->
 <script src="../lib/js/stack.js"></script>

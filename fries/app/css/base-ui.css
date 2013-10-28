@@ -10,7 +10,7 @@
 }
 /* Bottom Navigation - Tooltips */
 #bottomNav {
-  pointer-events: none;
+  xpointer-events: none;
   position: absolute;
   z-index: 10;
   bottom: 0;
@@ -71,64 +71,20 @@
   line-height: 23px;
   padding: 20px 20px 20px 25px;
 }
-/* Custom Grid */
-.col1 {
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-  width: 10%;
+.snap-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  height: auto;
 }
-.col2 {
-  width: 20%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
+.left-drawer {
+  z-index: 1;
+  width: 320px;
 }
-.col3 {
-  width: 30%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col4 {
-  width: 40%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col5 {
-  width: 50%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col6 {
-  width: 60%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col7 {
-  width: 70%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col8 {
-  width: 80%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col9 {
-  width: 90%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
-}
-.col10 {
-  width: 100%;
-  float: left;
-  line-height: 23px;
-  padding: 20px 20px 20px 25px;
+.snap-wrap-page {
+  position: absolute;
+  z-index: 2;
 }

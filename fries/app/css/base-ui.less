@@ -17,7 +17,7 @@
 
     // click through absolute div
     // http://stackoverflow.com/a/4839672/907388
-    pointer-events:none;
+    xpointer-events:none;
     position: absolute;
     z-index: 10;
     bottom: 0;
@@ -87,53 +87,22 @@
     padding: 20px 20px 20px 25px;
 }
 
-/* Custom Grid */
-.col1 {
-    .col;
-    width: 10%;
+.snap-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    height: auto;
 }
 
-.col2 {
-    width: 20%;
-    .col
+.left-drawer {
+    z-index: 1;
+    width: 320px;
 }
 
-.col3 {
-    width: 30%;
-    .col;
-}
-
-.col4 {
-    width: 40%;
-    .col
-}
-
-.col5 {
-    width: 50%;
-    .col
-}
-
-.col6 {
-    width: 60%;
-    .col
-}
-
-.col7 {
-    width: 70%;
-    .col
-}
-
-.col8 {
-    width: 80%;
-    .col
-}
-
-.col9 {
-    width: 90%;
-    .col
-}
-
-.col10 {
-    width: 100%;
-    .col
+.snap-wrap-page {
+    position: absolute;
+    z-index: 2;
 }

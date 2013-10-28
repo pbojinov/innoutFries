@@ -415,7 +415,7 @@ Findr.Markers = function () {
                     address: merchant.address,
                     city: merchant.city,
                     lat: merchant.pos.lat,
-                    lng:  merchant.pos.lng,
+                    lng: merchant.pos.lng,
                     id: merchant._id
                 };
 
@@ -605,17 +605,17 @@ Findr.InfoBox = function () {
         /*
          * TODO try this - http://stackoverflow.com/questions/8310300/open-native-maps-app-from-phonegap
 
-        $('#map').bind('tap', function(){
-             var url = 'http://maps.google.com/maps?';
-             url += 'q=[place_name]';
-             url += '&near=';
-             url += [lat];
-             url += ',';
-             url += [lon];
-             url += '&z=15';
-             // open the native maps app by calling window location
-             window.location = url;
-        }); */
+         $('#map').bind('tap', function(){
+         var url = 'http://maps.google.com/maps?';
+         url += 'q=[place_name]';
+         url += '&near=';
+         url += [lat];
+         url += ',';
+         url += [lon];
+         url += '&z=15';
+         // open the native maps app by calling window location
+         window.location = url;
+         }); */
         var geoUrl = 'geo:' + _currentMarker.lat + ',' + _currentMarker.lng; //geo: lat, lng -> 'geo:38.897096,-77.036545'
         _city.html(_currentMarker.city);
         _address.html(_currentMarker.address);
@@ -764,12 +764,33 @@ Findr.EventManager = function () {
 
 Findr.CustomUI = function () {
 
-    var centerLocationButton;
+    var centerLocationButton,
+        drawerButton,
+        snapper;
 
     function setup() {
         centerLocationButton = document.getElementById('centerLocation');
         jQuery(centerLocationButton).delay(100).animate({"opacity": "1"});
-        _addEvents();
+        centerLocationButton.addEventListener('mousedown', centerLocation, false);
+    }
+
+    function setupCriticalUI() {
+        drawerButton = document.getElementById('toggleDrawer');
+        jQuery(drawerButton).delay(100).animate({"opacity": "1"});
+        snapper = new Snap({
+            element: document.getElementById('snap-wrap-page')
+        });
+        drawerButton.addEventListener('mousedown', toggleDrawer, false);
+    }
+
+    function toggleDrawer() {
+        if (typeof snapper !== 'undefined') {
+            if (snapper.state().state == 'left') {
+                snapper.close();
+            } else {
+                snapper.open('left');
+            }
+        }
     }
 
     function centerLocation() {
@@ -777,17 +798,15 @@ Findr.CustomUI = function () {
         Findr.Map.panTo(coordinates.lat, coordinates.lng);
     }
 
-    function _addEvents() {
-        centerLocationButton.addEventListener('mousedown', centerLocation, false);
-    }
-
     return {
         setup: setup,
-        centerLocation: centerLocation
+        centerLocation: centerLocation,
+        setupCriticalUI: setupCriticalUI
     }
 }();
 
 window.onload = function () {
+    Findr.CustomUI.setupCriticalUI();
     Findr.Util.loadScript(Findr.Map.gmapsUrl);
     Findr.Geo.watchPosition();
 };
